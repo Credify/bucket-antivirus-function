@@ -80,6 +80,7 @@ def sns_scan_results(s3_object, result):
     message = {
         "bucket": s3_object.bucket_name,
         "key": s3_object.key,
+        "versionId": s3_object.version_id,
         AV_STATUS_METADATA: result,
         AV_TIMESTAMP_METADATA: datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S UTC")
     }
