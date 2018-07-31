@@ -46,7 +46,9 @@ def upload_defs_to_s3(bucket, prefix, local_path):
         local_file_path = os.path.join(local_path, filename)
         if os.path.exists(local_file_path):
             local_file_md5 = md5_from_file(local_file_path)
-            if local_file_md5 != md5_from_s3_tags(bucket, os.path.join(prefix, filename)):
+            remote_file_md5 = md5_from_s3_tags(bucket, os.path.join(prefix, filename))
+            print("filename=%s local_file_md5=%s remote_file_md5=%s" % (filename, local_file_md5, remote_file_md5))
+            if local_file_md5 != remote_file_md5:
                 print("Uploading %s to s3://%s" % (local_file_path, os.path.join(bucket, prefix, filename)))
                 s3_object = s3.Object(bucket, os.path.join(prefix, filename))
                 s3_object.upload_file(os.path.join(local_path, filename))
