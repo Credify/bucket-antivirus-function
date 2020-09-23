@@ -56,7 +56,7 @@ def lambda_handler(event, context):
             os.remove(os.path.join(AV_DEFINITION_PATH, "main.cvd"))
         retVal = clamav.update_defs_from_freshclam(AV_DEFINITION_PATH, CLAMAVLIB_PATH)
         if retVal != 0:
-            raise RuntimeError("clamAV update process returned %d" % (retVal))
+            raise RuntimeError("Refresh clamAV update process returned %d" % (retVal))
     clamav.upload_defs_to_s3(
         s3_client, AV_DEFINITION_S3_BUCKET, AV_DEFINITION_S3_PREFIX, AV_DEFINITION_PATH
     )
