@@ -1,0 +1,74 @@
+{
+  "not_peepdf_analysis": {
+    "advanced": [
+      {
+        "version_info": {
+          "catalog": "1",
+          "compressed_objects": [],
+          "decoding_error_streams": [],
+          "encoded_streams": [],
+          "error_objects": [],
+          "info": null,
+          "js_objects": [
+            3
+          ],
+          "objects": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "streams": [
+            4
+          ],
+          "suspicious_elements": {
+            "actions": {
+              "/JS": [
+                3
+              ],
+              "/JavaScript": [
+                3
+              ]
+            },
+            "elements": [],
+            "js_vulns": [],
+            "triggers": {
+              "/AA": [
+                3
+              ]
+            },
+            "urls": null
+          },
+          "version_number": 0,
+          "version_type": "original",
+          "xref_streams": []
+        }
+      }
+    ],
+    "basic": {
+      "binary": true,
+      "comments": 0,
+      "detection": {},
+      "encrypted": true,
+      "encryption_algorithms": [],
+      "errors": [],
+      "filename": "poc.pdf",
+      "linearized": true,
+      "md5": "9a8c2db1d21ce67375a239a975263b6e",
+      "num_objects": 4,
+      "num_streams": 1,
+      "pdf_version": "1.3",
+      "sha1": "8b3c9a4ddb1137c32cf022abef09a62612aed488",
+      "sha256": "547861a07b22e292ec393397f4b1fcb5a07b6ab34e80ffbcc316e2ee0bcde5e3",
+      "size": 660,
+      "updates": 0
+    },
+    "date": "2021-03-30 13:24",
+    "peepdf_info": {
+      "author": "Jose Miguel Esparza",
+      "revision": "275",
+      "url": "http://peepdf.eternal-todo.com",
+      "version": "0.3"
+    }
+  }
+}
