@@ -29,8 +29,7 @@ from clamav import scan_output_to_json
 from clamav import md5_from_s3_tags
 from clamav import time_from_s3
 from clamav import update_defs_from_s3
-from common import AV_DEFINITION_FILE_PREFIXES
-from common import AV_DEFINITION_FILE_SUFFIXES
+from common import AV_DEFINITION_FILES
 from common import AV_DEFINITION_S3_PREFIX
 from common import AV_SIGNATURE_OK
 
@@ -189,11 +188,11 @@ class TestClamAV(unittest.TestCase):
 
         key_names = []
         side_effect = []
-        for file_prefix in AV_DEFINITION_FILE_PREFIXES:
-            for file_suffix in AV_DEFINITION_FILE_SUFFIXES:
-                side_effect.extend([True, True])
-                filename = file_prefix + "." + file_suffix
-                key_names.append(os.path.join(AV_DEFINITION_S3_PREFIX, filename))
+
+        for filename in AV_DEFINITION_FILES:
+            side_effect.extend([True, True])
+            key_names.append(os.path.join(AV_DEFINITION_S3_PREFIX, filename))
+
         mock_exists.side_effect = side_effect
 
         for s3_key_name in key_names:
@@ -229,10 +228,14 @@ class TestClamAV(unittest.TestCase):
                 "local_path": "/tmp/clamav_defs/main.cvd",
                 "s3_path": "clamav_defs/main.cvd",
             },
+            "no_javascript_rule.yar": {
+                "local_path": "/tmp/clamav_defs/no_javascript_rule.yar",
+                "s3_path": "clamav_defs/no_javascript_rule.yar",
+            }
         }
         with s3_stubber:
             to_download = update_defs_from_s3(
-                self.s3_client, self.s3_bucket_name, AV_DEFINITION_S3_PREFIX
+                self.s3_client, self.s3_bucket_name
             )
             self.assertEquals(expected_to_download, to_download)
 
@@ -251,11 +254,10 @@ class TestClamAV(unittest.TestCase):
 
         key_names = []
         side_effect = []
-        for file_prefix in AV_DEFINITION_FILE_PREFIXES:
-            for file_suffix in AV_DEFINITION_FILE_SUFFIXES:
-                side_effect.extend([True, True])
-                filename = file_prefix + "." + file_suffix
-                key_names.append(os.path.join(AV_DEFINITION_S3_PREFIX, filename))
+        for filename in AV_DEFINITION_FILES:
+            side_effect.extend([True, True])
+            key_names.append(os.path.join(AV_DEFINITION_S3_PREFIX, filename))
+
         mock_exists.side_effect = side_effect
 
         for s3_key_name in key_names:
@@ -281,7 +283,7 @@ class TestClamAV(unittest.TestCase):
         expected_to_download = {}
         with s3_stubber:
             to_download = update_defs_from_s3(
-                self.s3_client, self.s3_bucket_name, AV_DEFINITION_S3_PREFIX
+                self.s3_client, self.s3_bucket_name
             )
             self.assertEquals(expected_to_download, to_download)
 
@@ -300,11 +302,10 @@ class TestClamAV(unittest.TestCase):
 
         key_names = []
         side_effect = []
-        for file_prefix in AV_DEFINITION_FILE_PREFIXES:
-            for file_suffix in AV_DEFINITION_FILE_SUFFIXES:
-                side_effect.extend([True, True])
-                filename = file_prefix + "." + file_suffix
-                key_names.append(os.path.join(AV_DEFINITION_S3_PREFIX, filename))
+        for filename in AV_DEFINITION_FILES:
+            side_effect.extend([True, True])
+            key_names.append(os.path.join(AV_DEFINITION_S3_PREFIX, filename))
+
         mock_exists.side_effect = side_effect
 
         count = 0
@@ -344,9 +345,13 @@ class TestClamAV(unittest.TestCase):
                 "local_path": "/tmp/clamav_defs/main.cld",
                 "s3_path": "clamav_defs/main.cld",
             },
+            "no_javascript_rule.yar": {
+                "local_path": "/tmp/clamav_defs/no_javascript_rule.yar",
+                "s3_path": "clamav_defs/no_javascript_rule.yar",
+            }
         }
         with s3_stubber:
             to_download = update_defs_from_s3(
-                self.s3_client, self.s3_bucket_name, AV_DEFINITION_S3_PREFIX
+                self.s3_client, self.s3_bucket_name
             )
             self.assertEquals(expected_to_download, to_download)

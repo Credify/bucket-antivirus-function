@@ -43,7 +43,11 @@ AV_DELETE_INFECTED_FILES = os.getenv("AV_DELETE_INFECTED_FILES", "False")
 
 AV_DEFINITION_FILE_PREFIXES = ["main", "daily", "bytecode"]
 AV_DEFINITION_FILE_SUFFIXES = ["cld", "cvd"]
+AV_CUSTOM_DEFINITION_FILES = ["no_javascript_rule.yar"]
+AV_CUSTOM_DEFINITION_FILES_PATH = os.getenv("AV_CUSTOM_DEFINITION_FILES_PATH", "./bin/custom_clamav_rules")
 
+# Union of definitons files by associating prefixes with suffixes along with custom definitions files
+AV_DEFINITION_FILES = [f"{p}.{s}" for p in AV_DEFINITION_FILE_PREFIXES for s in AV_DEFINITION_FILE_SUFFIXES] + AV_CUSTOM_DEFINITION_FILES
 
 def create_dir(path):
     if not os.path.exists(path):

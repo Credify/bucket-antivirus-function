@@ -24,6 +24,8 @@ import boto3
 import botocore
 from pytz import utc
 
+from common import AV_CUSTOM_DEFINITION_FILES
+from common import AV_DEFINITION_FILES
 from common import AV_DEFINITION_S3_PREFIX
 from common import AV_DEFINITION_PATH
 from common import AV_DEFINITION_FILE_PREFIXES
@@ -47,64 +49,78 @@ def current_library_search_path():
     return rd_ld.findall(ld_verbose)
 
 
-def update_defs_from_s3(s3_client, bucket, prefix):
+def update_defs_from_s3(s3_client, bucket):
     create_dir(AV_DEFINITION_PATH)
     to_download = {}
     for file_prefix in AV_DEFINITION_FILE_PREFIXES:
         s3_best_time = None
         for file_suffix in AV_DEFINITION_FILE_SUFFIXES:
             filename = file_prefix + "." + file_suffix
-            s3_path = os.path.join(AV_DEFINITION_S3_PREFIX, filename)
-            local_path = os.path.join(AV_DEFINITION_PATH, filename)
-            s3_md5 = md5_from_s3_tags(s3_client, bucket, s3_path)
-            s3_time = time_from_s3(s3_client, bucket, s3_path)
+            file_to_update, s3_best_time = __should_update_defs_from_s3(s3_client, bucket, filename, s3_best_time)
+            if file_to_update:
+                to_download[file_prefix] = file_to_update
 
-            if s3_best_time is not None and s3_time < s3_best_time:
-                print("Not downloading older file in series: %s" % filename)
-                continue
-            else:
-                s3_best_time = s3_time
+    for filename in AV_CUSTOM_DEFINITION_FILES:
+        file_to_update, s3_best_time= __should_update_defs_from_s3(s3_client, bucket, filename, None)
+        if file_to_update:
+            to_download[filename] = file_to_update
 
-            if os.path.exists(local_path) and md5_from_file(local_path) == s3_md5:
-                print("Not downloading %s because local md5 matches s3." % filename)
-                continue
-            if s3_md5:
-                to_download[file_prefix] = {
-                    "s3_path": s3_path,
-                    "local_path": local_path,
-                }
     return to_download
 
 
+def __should_update_defs_from_s3(s3_client, bucket, filename, s3_best_time):
+    s3_path = os.path.join(AV_DEFINITION_S3_PREFIX, filename)
+    local_path = os.path.join(AV_DEFINITION_PATH, filename)
+    s3_md5 = md5_from_s3_tags(s3_client, bucket, s3_path)
+    s3_time = time_from_s3(s3_client, bucket, s3_path)
+
+    if s3_best_time is not None and s3_time < s3_best_time:
+        print("Not downloading older file in series: %s" % filename)
+        return None, s3_best_time
+    else:
+        s3_best_time = s3_time
+
+    if os.path.exists(local_path) and md5_from_file(local_path) == s3_md5:
+        print("Not downloading %s because local md5 matches s3." % filename)
+        return None, s3_best_time
+    if s3_md5:
+        return {
+                   "s3_path": s3_path,
+                   "local_path": local_path,
+               }, s3_best_time
+
+    return None, s3_best_time
+
+
 def upload_defs_to_s3(s3_client, bucket, prefix, local_path):
-    for file_prefix in AV_DEFINITION_FILE_PREFIXES:
-        for file_suffix in AV_DEFINITION_FILE_SUFFIXES:
-            filename = file_prefix + "." + file_suffix
-            local_file_path = os.path.join(local_path, filename)
-            if os.path.exists(local_file_path):
-                local_file_md5 = md5_from_file(local_file_path)
-                if local_file_md5 != md5_from_s3_tags(
-                    s3_client, bucket, os.path.join(prefix, filename)
-                ):
-                    print(
-                        "Uploading %s to s3://%s"
-                        % (local_file_path, os.path.join(bucket, prefix, filename))
-                    )
-                    s3 = boto3.resource("s3")
-                    s3_object = s3.Object(bucket, os.path.join(prefix, filename))
-                    s3_object.upload_file(os.path.join(local_path, filename))
-                    s3_client.put_object_tagging(
-                        Bucket=s3_object.bucket_name,
-                        Key=s3_object.key,
-                        Tagging={"TagSet": [{"Key": "md5", "Value": local_file_md5}]},
-                    )
-                else:
-                    print(
-                        "Not uploading %s because md5 on remote matches local."
-                        % filename
-                    )
+
+
+    for filename in AV_DEFINITION_FILES:
+        local_file_path = os.path.join(local_path, filename)
+        if os.path.exists(local_file_path):
+            local_file_md5 = md5_from_file(local_file_path)
+            if local_file_md5 != md5_from_s3_tags(
+                s3_client, bucket, os.path.join(prefix, filename)
+            ):
+                print(
+                    "Uploading %s to s3://%s"
+                    % (local_file_path, os.path.join(bucket, prefix, filename))
+                )
+                s3 = boto3.resource("s3")
+                s3_object = s3.Object(bucket, os.path.join(prefix, filename))
+                s3_object.upload_file(os.path.join(local_path, filename))
+                s3_client.put_object_tagging(
+                    Bucket=s3_object.bucket_name,
+                    Key=s3_object.key,
+                    Tagging={"TagSet": [{"Key": "md5", "Value": local_file_md5}]},
+                )
             else:
-                print("File does not exist: %s" % filename)
+                print(
+                    "Not uploading %s because md5 on remote matches local."
+                    % filename
+                )
+        else:
+            print("File does not exist: %s" % filename)
 
 
 def update_defs_from_freshclam(path, library_path=""):
