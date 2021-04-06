@@ -8,11 +8,11 @@ USER upgrade
 RUN mkdir -p /app/build
 RUN mkdir -p /app/bin
 
-
 # Copy in the lambda source
 WORKDIR /app
 COPY ./*.py /app/
 COPY requirements.txt /app/requirements.txt
+ADD custom_clamav_rules /app/bin/custom_clamav_rules
 
 # Install packages
 USER root
