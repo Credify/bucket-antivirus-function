@@ -34,10 +34,8 @@ or INFECTED, along with the date and time of the scan.
 
 ### Build from Source
 
-To build the archive to upload to AWS Lambda, run `make`.  The build process is completed using
-the [amazonlinux](https://hub.docker.com/_/amazonlinux/) [Docker](https://www.docker.com)
- image.  The resulting archive will be built at `build/lambda.zip`.  This file will be
- uploaded to AWS for both Lambda functions below.
+To build the image to upload to AWS Lambda, run `docker build -t your-lambda .`.  The build process is completed using
+the [Amazon](https://gallery.ecr.aws/lambda/python) python image for lambda deployment.
 
 ### AV Definition Bucket
 
@@ -346,26 +344,34 @@ the script uses the same environment variables you'd use in your lambda so you c
 
 ## Testing
 
-There are two types of tests in this repository. The first is pre-commit tests and the second are python tests. All of
-these tests are run by CircleCI.
+There are two types of tests in this repository. The first is pre-commit tests and the second are python tests. The python tests in this repository use `unittest`. To run them you will need
+to install the developer resources:
+
+```sh
+pip install -r requirements-dev.txt
+```
 
 ### pre-commit Tests
 
 The pre-commit tests ensure that code submitted to this repository meet the standards of the repository. To get started
-with these tests run `make pre_commit_install`. This will install the pre-commit tool and then install it in this
+with these tests run the following commands:
+
+```sh
+pip install pre-commit==1.18.3
+pre-commit install
+pre-commit install-hooks
+```
+This will install the pre-commit tool and then install it in this
 repository. Then the github pre-commit hook will run these tests before you commit your code.
 
-To run the tests manually run `make pre_commit_tests` or `pre-commit run -a`.
+To run the tests manually run `pre-commit run --all-files`.
 
 ### Python Tests
 
-The python tests in this repository use `unittest` and are run via the `nose` utility. To run them you will need
-to install the developer resources and then run the tests:
+To run all unit-tests, simply execute the following command:
 
 ```sh
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
-make test
+python -m unittest
 ```
 
 ### Local lambdas
@@ -376,22 +382,18 @@ by using docker containers that act similarly to lambda. You will need to have s
 it can be installed with `brew install direnv`.
 
 For the Scan lambda you will need a test file uploaded to S3 and the variables `TEST_BUCKET` and `TEST_KEY`
-set in your `.envrc.local` file. Then you can run:
+set in your `.envrc.local` file. Then you can run both commands to execute the scan or update lambda, respectively:
 
 ```sh
-direnv allow
-make archive scan
+sh ./scripts/run-scan-lambda
+sh ./scripts/run-update-lambda
 ```
 
+Both commands rebuild the docker image ready to be deployed in AWS and execute the appropriate handler.
+
+### Sample files
 If you want a file that will be recognized as a virus you can download a test file from the [EICAR](https://www.eicar.org/?page_id=3950)
 website and uploaded to your bucket.
-
-For the Update lambda you can run:
-
-```sh
-direnv allow
-make archive update
-```
 
 ## License
 

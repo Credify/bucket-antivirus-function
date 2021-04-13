@@ -1,28 +1,22 @@
-FROM docker-upgrade.artifactory.build.upgrade.com/container-base:2.0.20200406.0-205
+FROM public.ecr.aws/lambda/python:3.7 as build-image
 
 # Set up working directories
 USER root
 RUN mkdir /app
-RUN chown -R upgrade /app
-USER upgrade
-RUN mkdir -p /app/build
-RUN mkdir -p /app/bin
-
-# Copy in the lambda source
+ADD . /app
 WORKDIR /app
-COPY ./*.py /app/
-COPY requirements.txt /app/requirements.txt
-ADD custom_clamav_rules /app/bin/custom_clamav_rules
+
+RUN pip3 install -r requirements-dev.txt
+
+RUN python3 -m unittest
+
+FROM docker-upgrade.artifactory.build.upgrade.com/container-base:2.0.20200406.0-205 as clamav-image
+
+USER root
 
 # Install packages
-USER root
-RUN yum update -y
-RUN yum install -y cpio python3-pip yum-utils zip unzip less
+RUN yum install -y cpio yum-utils less
 RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-
-# This had --no-cache-dir, tracing through multiple tickets led to a problem in wheel
-RUN pip3 install -r requirements.txt
-RUN rm -rf /root/.cache/pip
 
 # Download libraries we need to run in lambda
 WORKDIR /tmp
@@ -38,17 +32,25 @@ RUN rpm2cpio libtasn1*.rpm | cpio -idmv
 RUN rpm2cpio nettle*.rpm | cpio -idmv
 
 # Copy over the binaries and libraries
-RUN cp /tmp/usr/bin/clamscan /tmp/usr/bin/freshclam /tmp/usr/lib64/* /app/bin/
+RUN mkdir /clamav
+RUN cp /tmp/usr/bin/clamscan /tmp/usr/bin/freshclam /tmp/usr/lib64/* /clamav
 
 # Fix the freshclam.conf settings
-RUN echo "DatabaseMirror database.clamav.net" > /app/bin/freshclam.conf
-RUN echo "CompressLocalDatabase yes" >> /app/bin/freshclam.conf
+RUN echo "DatabaseMirror database.clamav.net" > /clamav/freshclam.conf
+RUN echo "CompressLocalDatabase yes" >> /clamav/freshclam.conf
 
-# Create the zip file
-WORKDIR /app
-RUN zip -r9 --exclude="*test*" /app/build/lambda.zip *.py bin
+FROM public.ecr.aws/lambda/python:3.7
 
-WORKDIR /usr/local/lib/python3.7/site-packages
-RUN zip -r9 /app/build/lambda.zip *
+# Copy all dependencies from previous layers
+COPY --from=build-image /app/*.py /var/task
+COPY --from=build-image /app/requirements.txt /var/task/requirements.txt
+COPY --from=build-image /app/custom_clamav_rules /var/task/bin/custom_clamav_rules
+COPY --from=clamav-image /clamav /var/task/bin
 
-WORKDIR /app
+RUN pip3 install -r requirements.txt --target /var/task
+
+ENV PATH="/usr/sbin:${PATH}"
+RUN useradd -r -s /bin/false upgrade
+USER upgrade
+
+WORKDIR /var/task
