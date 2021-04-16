@@ -6,13 +6,12 @@ set -eu -o pipefail
 # Run the update.lambda_handler locally in a docker container
 #
 
-rm -rf tmp/
-unzip -qq -d ./tmp build/lambda.zip
+docker build -t local-antivirus-lambda:latest .
 
 NAME="antivirus-update"
-
+trap "docker stop ${NAME}" EXIT ERR INT TERM
 docker run --rm \
-  -v "$(pwd)/tmp/:/var/task" \
+  -p 9000:8080 \
   -e AV_DEFINITION_PATH \
   -e AV_DEFINITION_S3_BUCKET \
   -e AV_DEFINITION_S3_PREFIX \
@@ -26,4 +25,12 @@ docker run --rm \
   --memory-swap="${MEM}" \
   --cpus="${CPUS}" \
   --name="${NAME}" \
-  lambci/lambda:python3.7 update.lambda_handler
+  -d \
+  local-antivirus-lambda:latest update.lambda_handler
+
+until [ "`docker inspect -f {{.State.Running}} ${NAME}`"=="true" ]; do
+    sleep 0.1;
+done;
+
+curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d "{}" &
+docker logs ${NAME} -f

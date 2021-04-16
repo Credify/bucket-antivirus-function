@@ -1,7 +1,7 @@
 # boto3 available by default in AWS but not locally
-boto3
+boto3==1.15.18
 
 # Test requirements
+-r requirements.txt
 coverage
 mock==3.0.5
-nose

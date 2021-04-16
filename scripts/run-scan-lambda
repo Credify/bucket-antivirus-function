@@ -11,21 +11,18 @@ if [ $# -lt 2 ]; then
   exit 1
 fi
 
+docker build -t local-antivirus-lambda:latest .
+
 BUCKET=$1
 KEY=$2
-EVENT="{\"Records\": [{\"s3\": {\"bucket\": {\"name\": \"${BUCKET}\"}, \"object\": {\"key\": \"${KEY}\"}}}]}"
-echo "Sending S3 event: ${EVENT}"
 
 # Verify that the file exists first
 aws s3 ls "s3://${BUCKET}/${KEY}"
 
-rm -rf tmp/
-unzip -qq -d ./tmp build/lambda.zip
-
 NAME="antivirus-scan"
-
+trap "docker stop ${NAME}" EXIT ERR INT TERM
 docker run --rm \
-  -v "$(pwd)/tmp/:/var/task" \
+  -p 9000:8080 \
   -e AV_DEFINITION_S3_BUCKET \
   -e AV_DEFINITION_S3_PREFIX \
   -e AV_DELETE_INFECTED_FILES \
@@ -49,4 +46,15 @@ docker run --rm \
   --memory-swap="${MEM}" \
   --cpus="${CPUS}" \
   --name="${NAME}" \
-  lambci/lambda:python3.7 scan.lambda_handler "${EVENT}"
+   -d \
+  local-antivirus-lambda:latest scan.lambda_handler
+
+until [ "`docker inspect -f {{.State.Running}} ${NAME}`"=="true" ]; do
+    sleep 0.1;
+done;
+
+EVENT="{\"Records\": [{\"s3\": {\"bucket\": {\"name\": \"${BUCKET}\"}, \"object\": {\"key\": \"${KEY}\"}}}]}"
+echo "Sending S3 event: ${EVENT}"
+curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d "${EVENT}" &
+
+docker logs ${NAME} -f
