@@ -29,11 +29,16 @@ from clamav import scan_output_to_json
 from clamav import md5_from_s3_tags
 from clamav import time_from_s3
 from clamav import update_defs_from_s3
-from common import AV_DEFINITION_FILES
 from common import AV_DEFINITION_S3_PREFIX
 from common import AV_SIGNATURE_OK
 
+AV_CUSTOM_DEFINITION_FILES = ["no_javascript_rule.yar"]
+AV_DEFINITION_FILES = ["main.cld", "main.cvd", "daily.cld", "daily.cvd", "bytecode.cld", "bytecode.cvd", "no_javascript_rule.yar"]
 
+@mock.patch("clamav.AV_CUSTOM_DEFINITION_FILES", AV_CUSTOM_DEFINITION_FILES)
+@mock.patch("clamav.AV_DEFINITION_FILES", AV_DEFINITION_FILES)
+@mock.patch("common.AV_CUSTOM_DEFINITION_FILES", AV_CUSTOM_DEFINITION_FILES)
+@mock.patch("common.AV_DEFINITION_FILES", AV_DEFINITION_FILES)
 class TestClamAV(unittest.TestCase):
     def setUp(self):
         # Common data
