@@ -65,8 +65,24 @@ class TestScan(unittest.TestCase):
                 }
             ]
         }
-        sns_event = {"Records": [{"Sns": {"Message": json.dumps(event)}}]}
-        s3_obj = event_object(sns_event, event_source="sns")
+        sns_event = {"Records": [{"eventSource": "aws:sns", "Sns": {"Message": json.dumps(event)}}]}
+        s3_obj = event_object(sns_event)
+        expected_s3_object = self.s3.Object(self.s3_bucket_name, self.s3_key_name)
+        self.assertEquals(s3_obj, expected_s3_object)
+
+    def test_sqs_event_object(self):
+        event = {
+            "Records": [
+                {
+                    "s3": {
+                        "bucket": {"name": self.s3_bucket_name},
+                        "object": {"key": self.s3_key_name},
+                    }
+                }
+            ]
+        }
+        sqs_event = {"Records": [{"eventSource": "aws:sqs", "body": json.dumps(event)}]}
+        s3_obj = event_object(sqs_event)
         expected_s3_object = self.s3.Object(self.s3_bucket_name, self.s3_key_name)
         self.assertEquals(s3_obj, expected_s3_object)
 
