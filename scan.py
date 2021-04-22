@@ -43,11 +43,16 @@ from upgrade_common import IS_AV_ENABLED
 from upgrade_mime_check import is_mime_valid
 from upgrade_sns import sns_message_attributes
 
-def event_object(event, event_source="s3"):
+def event_object(event):
+    event_source = event["Records"][0].get("eventSource", "aws:s3")
 
-    # SNS events are slightly different
-    if event_source.upper() == "SNS":
+    # Unwrap SNS event
+    if event_source == "aws:sns":
         event = json.loads(event["Records"][0]["Sns"]["Message"])
+
+    # Unwrap SQS event
+    if event_source == "aws:sqs":
+        event = json.loads(event["Records"][0]["body"])
 
     # Break down the record
     records = event["Records"]
@@ -210,17 +215,20 @@ def scan_file(s3_object, file_path):
 
 
 def lambda_handler(event, context):
+    if event.get("Event") == "s3:TestEvent":
+        print("Skipping S3 test event")
+        return
+
     s3 = boto3.resource("s3")
     s3_client = boto3.client("s3")
     sns_client = boto3.client("sns")
 
     # Get some environment variables
     ENV = os.getenv("ENV", "")
-    EVENT_SOURCE = os.getenv("EVENT_SOURCE", "S3")
 
     start_time = get_timestamp()
     print("Script starting at %s\n" % (start_time))
-    s3_object = event_object(event, event_source=EVENT_SOURCE)
+    s3_object = event_object(event)
 
     if str_to_bool(AV_PROCESS_ORIGINAL_VERSION_ONLY):
         if not verify_s3_object_version(s3, s3_object):
