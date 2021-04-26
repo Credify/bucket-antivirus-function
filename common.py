@@ -43,7 +43,7 @@ AV_DELETE_INFECTED_FILES = os.getenv("AV_DELETE_INFECTED_FILES", "False")
 
 AV_DEFINITION_FILE_PREFIXES = ["main", "daily", "bytecode"]
 AV_DEFINITION_FILE_SUFFIXES = ["cld", "cvd"]
-AV_CUSTOM_DEFINITION_FILES = ["no_javascript_rule.yar"]
+AV_CUSTOM_DEFINITION_FILES = ["no_javascript_rule.yar"] if os.getenv("AV_CUSTOM_DEFINITION_NO_JAVASCRIPT_RULE_ENABLED", "false").lower() in ("yes", "true") else []
 AV_CUSTOM_DEFINITION_FILES_PATH = os.getenv("AV_CUSTOM_DEFINITION_FILES_PATH", "./bin/custom_clamav_rules")
 
 # Union of definitons files by associating prefixes with suffixes along with custom definitions files
