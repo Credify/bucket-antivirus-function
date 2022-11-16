@@ -10,7 +10,7 @@ RUN pip3 install -r requirements-dev.txt
 
 RUN python3 -m unittest
 
-FROM docker-release.artifactory.build.upgrade.com/container-base:2.0.20221004.0-32 as clamav-image
+FROM docker-release.artifactory.build.upgrade.com/container-base:2.0.20221004.0-33 as clamav-image
 
 USER root
 
