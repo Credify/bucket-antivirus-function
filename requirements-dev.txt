@@ -4,4 +4,4 @@ boto3==1.15.18
 # Test requirements
 -r requirements.txt
 coverage
-mock==3.0.5
+mock==5.0.2
