@@ -47,12 +47,18 @@ COPY --from=build-image /app/requirements.txt /var/task/requirements.txt
 COPY --from=build-image /app/custom_clamav_rules /var/task/bin/custom_clamav_rules
 COPY --from=clamav-image /clamav /var/task/bin
 
-RUN pip3 install -r requirements.txt --target /var/task
+RUN python -m pip install --upgrade pip \
+    && pip3 install -r requirements.txt --target /var/task
 
 ENV PATH="/usr/sbin:${PATH}"
 RUN yum -y install shadow-utils \
     && useradd -r -s /bin/false upgrade \
-    && yum -y remove shadow-utils \
+    && yum -y remove \
+        audit-libs \
+        libcap-ng \
+        libsemanage \
+        shadow-utils \
+        ustr \
     && yum clean all \
     && rm -rf /var/cache/yum
 USER upgrade
