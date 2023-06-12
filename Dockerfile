@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/python:3.7 as build-image
+FROM public.ecr.aws/lambda/python:3.8 as build-image
 
 # Set up working directories
 USER root
@@ -20,7 +20,7 @@ RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.n
 
 # Download libraries we need to run in lambda
 WORKDIR /tmp
-RUN yumdownloader -x \*i686 --archlist=x86_64 clamav clamav-lib clamav-update json-c pcre2 pcre libprelude gnutls libtasn1 nettle
+RUN yumdownloader -x \*i686 --archlist=x86_64,aarch64 clamav clamav-lib clamav-update json-c pcre2 pcre libprelude gnutls libtasn1 nettle
 RUN rpm2cpio clamav-0*.rpm | cpio -idmv
 RUN rpm2cpio clamav-lib*.rpm | cpio -idmv
 RUN rpm2cpio clamav-update*.rpm | cpio -idmv
@@ -39,7 +39,7 @@ RUN cp /tmp/usr/bin/clamscan /tmp/usr/bin/freshclam /tmp/usr/lib64/* /clamav
 RUN echo "DatabaseMirror database.clamav.net" > /clamav/freshclam.conf
 RUN echo "CompressLocalDatabase yes" >> /clamav/freshclam.conf
 
-FROM public.ecr.aws/lambda/python:3.7
+FROM public.ecr.aws/lambda/python:3.8
 
 # Copy all dependencies from previous layers
 COPY --from=build-image /app/*.py /var/task
@@ -50,7 +50,11 @@ COPY --from=clamav-image /clamav /var/task/bin
 RUN pip3 install -r requirements.txt --target /var/task
 
 ENV PATH="/usr/sbin:${PATH}"
-RUN useradd -r -s /bin/false upgrade
+RUN yum -y install shadow-utils \
+    && useradd -r -s /bin/false upgrade \
+    && yum -y remove shadow-utils \
+    && yum clean all \
+    && rm -rf /var/cache/yum
 USER upgrade
 
 WORKDIR /var/task
