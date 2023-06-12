@@ -1,10 +1,10 @@
-certifi==2022.12.07
+certifi==2023.5.7
 chardet==3.0.4
 datadog==0.26.0
 decorator==4.3
 idna==2.8
 requests==2.31.0
 simplejson==3.16
-urllib3==1.25.9
+urllib3==1.26.5
 pytz==2019.3
 python-magic==0.4.15

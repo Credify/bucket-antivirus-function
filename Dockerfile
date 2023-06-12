@@ -47,7 +47,7 @@ COPY --from=build-image /app/requirements.txt /var/task/requirements.txt
 COPY --from=build-image /app/custom_clamav_rules /var/task/bin/custom_clamav_rules
 COPY --from=clamav-image /clamav /var/task/bin
 
-RUN python -m pip install --upgrade pip \
+RUN python -m pip install --upgrade pip setuptools \
     && pip3 install -r requirements.txt --target /var/task
 
 ENV PATH="/usr/sbin:${PATH}"
