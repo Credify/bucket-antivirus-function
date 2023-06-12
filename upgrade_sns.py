@@ -1,4 +1,4 @@
-from common import AV_STATUS_METADATA, AV_SIGNATURE_METADATA
+from common import AV_STATUS_METADATA, AV_SIGNATURE_METADATA, UPGRADE_MESSAGE_TAGS
 
 def sns_message_attributes(s3_object, scan_result = None, scan_signature = None):
     message_attributes = {}
@@ -19,4 +19,8 @@ def sns_message_attributes(s3_object, scan_result = None, scan_signature = None)
     if scan_signature is not None:
         message_attributes[AV_SIGNATURE_METADATA] = {"DataType": "String",
                                                      "StringValue": scan_signature}
+
+    if UPGRADE_MESSAGE_TAGS is not None:
+        message_attributes['tags'] = {"DataType": "String",
+                                      "StringValue": UPGRADE_MESSAGE_TAGS}
     return message_attributes

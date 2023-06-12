@@ -268,7 +268,8 @@ class TestScan(unittest.TestCase):
             "MessageStructure": "json",
             "MessageAttributes": {
                 "application": {"DataType": "String", "StringValue": 'doc-mgt-srvc'},
-                "environment": {"DataType": "String", "StringValue": 'unit-test'}
+                "environment": {"DataType": "String", "StringValue": 'unit-test'},
+                "tags": {"DataType": "String", "StringValue": 'platform'},
             },
         }
         sns_stubber.add_response("publish", publish_response, publish_expected_params)
@@ -415,6 +416,7 @@ class TestScan(unittest.TestCase):
                 "av-signature": {"DataType": "String", "StringValue": scan_signature},
                 "application": {"DataType": "String", "StringValue": 'doc-mgt-srvc'},
                 "environment": {"DataType": "String", "StringValue": 'unit-test'},
+                "tags": {"DataType": "String", "StringValue": 'platform'},
             },
             "MessageStructure": "json",
         }
