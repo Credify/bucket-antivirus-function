@@ -1,4 +1,4 @@
-FROM docker-upgrade.artifactory.build.upgrade.com/python-base:2.0.20230320.0-46.3.8-87 as build-image
+FROM docker-upgrade.artifactory.build.upgrade.com/python-base-2023:2.0.20230320.0-46.3.8-87 as build-image
 
 # Set up working directories
 WORKDIR /app
@@ -37,7 +37,7 @@ RUN cp /tmp/usr/bin/clamscan /tmp/usr/bin/freshclam /tmp/usr/lib64/* /clamav
 RUN echo "DatabaseMirror database.clamav.net" > /clamav/freshclam.conf && \
     echo "CompressLocalDatabase yes" >> /clamav/freshclam.conf
 
-FROM docker-upgrade.artifactory.build.upgrade.com/python-base:2.0.20230320.0-46.3.8-87
+FROM docker-upgrade.artifactory.build.upgrade.com/python-base-2023:2.0.20230320.0-46.3.8-87
 
 WORKDIR /var/task
 
