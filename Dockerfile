@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/python:3.7 as build-image
+FROM public.ecr.aws/lambda/python:3.10 as build-image
 
 # Set up working directories
 USER root
@@ -15,6 +15,7 @@ FROM docker-release.artifactory.build.upgrade.com/container-base:2.0.20230320.0-
 USER root
 
 # Install packages
+RUN yum install -y shadow-utils
 RUN yum install -y cpio yum-utils less
 RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
@@ -39,7 +40,7 @@ RUN cp /tmp/usr/bin/clamscan /tmp/usr/bin/freshclam /tmp/usr/lib64/* /clamav
 RUN echo "DatabaseMirror database.clamav.net" > /clamav/freshclam.conf
 RUN echo "CompressLocalDatabase yes" >> /clamav/freshclam.conf
 
-FROM public.ecr.aws/lambda/python:3.7
+FROM public.ecr.aws/lambda/python:3.10
 
 # Copy all dependencies from previous layers
 COPY --from=build-image /app/*.py /var/task
@@ -48,8 +49,10 @@ COPY --from=build-image /app/custom_clamav_rules /var/task/bin/custom_clamav_rul
 COPY --from=clamav-image /clamav /var/task/bin
 
 RUN pip3 install -r requirements.txt --target /var/task
+RUN yum install -y shadow-utils
 
 ENV PATH="/usr/sbin:${PATH}"
+RUN ls "/usr/sbin/"
 RUN useradd -r -s /bin/false upgrade
 USER upgrade
 
