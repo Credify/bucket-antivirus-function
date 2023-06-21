@@ -15,7 +15,6 @@ FROM docker-release.artifactory.build.upgrade.com/container-base:2.0.20230320.0-
 USER root
 
 # Install packages
-RUN yum install -y shadow-utils
 RUN yum install -y cpio yum-utils less
 RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
@@ -52,7 +51,6 @@ RUN pip3 install -r requirements.txt --target /var/task
 RUN yum install -y shadow-utils
 
 ENV PATH="/usr/sbin:${PATH}"
-RUN ls "/usr/sbin/"
 RUN useradd -r -s /bin/false upgrade
 USER upgrade
 
