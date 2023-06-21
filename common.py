@@ -49,8 +49,6 @@ AV_CUSTOM_DEFINITION_FILES_PATH = os.getenv("AV_CUSTOM_DEFINITION_FILES_PATH", "
 # Union of definitons files by associating prefixes with suffixes along with custom definitions files
 AV_DEFINITION_FILES = [f"{p}.{s}" for p in AV_DEFINITION_FILE_PREFIXES for s in AV_DEFINITION_FILE_SUFFIXES] + AV_CUSTOM_DEFINITION_FILES
 
-UPGRADE_MESSAGE_TAGS = os.getenv("UPGRADE_MESSAGE_TAGS", "platform")
-
 def create_dir(path):
     if not os.path.exists(path):
         try:
