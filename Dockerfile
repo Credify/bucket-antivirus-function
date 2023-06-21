@@ -1,13 +1,11 @@
 FROM public.ecr.aws/lambda/python:3.10 as build-image
 
 # Set up working directories
-USER root
-RUN mkdir /app
-ADD . /app
 WORKDIR /app
+COPY . /app
 
-RUN pip3 install -r requirements-dev.txt
-
+RUN pip3 install --no-cache-dir -r requirements-dev.txt
+# hadolint ignore=DL3059
 RUN python3 -m unittest
 
 FROM docker-release.artifactory.build.upgrade.com/container-base:2.0.20230320.0-46 as clamav-image
@@ -20,7 +18,7 @@ RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.n
 
 # Download libraries we need to run in lambda
 WORKDIR /tmp
-RUN yumdownloader -x \*i686 --archlist=x86_64 clamav clamav-lib clamav-update json-c pcre2 pcre libprelude gnutls libtasn1 nettle
+RUN yumdownloader -x \*i686 --archlist=x86_64,aarch64 clamav clamav-lib clamav-update json-c pcre2 pcre libprelude gnutls libtasn1 nettle
 RUN rpm2cpio clamav-0*.rpm | cpio -idmv
 RUN rpm2cpio clamav-lib*.rpm | cpio -idmv
 RUN rpm2cpio clamav-update*.rpm | cpio -idmv
@@ -36,22 +34,23 @@ RUN mkdir /clamav
 RUN cp /tmp/usr/bin/clamscan /tmp/usr/bin/freshclam /tmp/usr/lib64/* /clamav
 
 # Fix the freshclam.conf settings
-RUN echo "DatabaseMirror database.clamav.net" > /clamav/freshclam.conf
-RUN echo "CompressLocalDatabase yes" >> /clamav/freshclam.conf
+RUN echo "DatabaseMirror database.clamav.net" > /clamav/freshclam.conf && \
+    echo "CompressLocalDatabase yes" >> /clamav/freshclam.conf
 
 FROM public.ecr.aws/lambda/python:3.10
 
-# Copy all dependencies from previous layers
-COPY --from=build-image /app/*.py /var/task
-COPY --from=build-image /app/requirements.txt /var/task/requirements.txt
-COPY --from=build-image /app/custom_clamav_rules /var/task/bin/custom_clamav_rules
-COPY --from=clamav-image /clamav /var/task/bin
-
-RUN pip3 install -r requirements.txt --target /var/task
-RUN yum install -y shadow-utils
-
-ENV PATH="/usr/sbin:${PATH}"
-RUN useradd -r -s /bin/false upgrade
-USER upgrade
-
 WORKDIR /var/task
+
+# Copy all dependencies from previous layers
+COPY --chown=upgrade:upgrade --from=build-image /app/*.py /var/task
+COPY --chown=upgrade:upgrade --from=build-image /app/requirements.txt /var/task/requirements.txt
+COPY --chown=upgrade:upgrade --from=build-image /app/custom_clamav_rules /var/task/bin/custom_clamav_rules
+COPY --chown=upgrade:upgrade --from=clamav-image /clamav /var/task/bin
+
+#RUN yum install -y shadow-utils
+
+#ENV PATH="/usr/sbin:${PATH}"
+#RUN useradd -r -s /bin/false upgrade
+#USER upgrade
+
+RUN pip3 install --no-cache-dir -r requirements.txt --target /var/task

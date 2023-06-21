@@ -1,5 +1,5 @@
 # boto3 available by default in AWS but not locally
-boto3==1.15.18
+boto3==1.19.12
 
 # Test requirements
 -r requirements.txt
