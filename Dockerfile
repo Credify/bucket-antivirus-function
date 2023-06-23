@@ -13,7 +13,7 @@ FROM docker-release.artifactory.build.upgrade.com/container-base:2.0.20230320.0-
 USER root
 
 # Install packages
-RUN yum install -y cpio yum-utils libltdl7 less
+RUN yum install -y cpio yum-utils less
 RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
 # Download libraries we need to run in lambda
@@ -38,6 +38,10 @@ RUN echo "DatabaseMirror database.clamav.net" > /clamav/freshclam.conf && \
     echo "CompressLocalDatabase yes" >> /clamav/freshclam.conf
 
 FROM public.ecr.aws/lambda/python:3.10
+
+#RUN yum whatprovides 'libltdl.so.7'
+
+RUN yum install -y libtool-ltdl
 
 WORKDIR /var/task
 
