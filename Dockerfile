@@ -39,9 +39,9 @@ RUN echo "DatabaseMirror database.clamav.net" > /clamav/freshclam.conf && \
 
 FROM public.ecr.aws/lambda/python:3.10
 
-#RUN yum whatprovides 'libltdl.so.7'
+#RUN yum whatprovides ld-linux.so.2
 
-RUN yum install -y libtool-ltdl
+RUN yum install -y libtool-ltdl binutils
 
 WORKDIR /var/task
 

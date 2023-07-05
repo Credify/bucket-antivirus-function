@@ -8,7 +8,7 @@ set -eu -o pipefail
 
 docker build -t local-antivirus-lambda:latest .
 
-NAME="antivirus-update"
+NAME="local-antivirus-lambda"
 trap "docker stop ${NAME}" EXIT ERR INT TERM
 docker run --rm \
   -p 9000:8080 \
