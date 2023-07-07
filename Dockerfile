@@ -39,8 +39,6 @@ RUN echo "DatabaseMirror database.clamav.net" > /clamav/freshclam.conf && \
 
 FROM public.ecr.aws/lambda/python:3.10
 
-#RUN yum whatprovides ld-linux.so.2
-
 RUN yum install -y libtool-ltdl binutils
 
 WORKDIR /var/task
@@ -50,11 +48,5 @@ COPY --chown=upgrade:upgrade --from=build-image /app/*.py /var/task
 COPY --chown=upgrade:upgrade --from=build-image /app/requirements.txt /var/task/requirements.txt
 COPY --chown=upgrade:upgrade --from=build-image /app/custom_clamav_rules /var/task/bin/custom_clamav_rules
 COPY --chown=upgrade:upgrade --from=clamav-image /clamav /var/task/bin
-
-#RUN yum install -y shadow-utils
-
-#ENV PATH="/usr/sbin:${PATH}"
-#RUN useradd -r -s /bin/false upgrade
-#USER upgrade
 
 RUN pip3 install --no-cache-dir -r requirements.txt --target /var/task
