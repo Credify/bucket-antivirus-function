@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/python:3.10 as build-image
+FROM public.ecr.aws/lambda/python:3.8 as build-image
 
 # Set up working directories
 WORKDIR /app
@@ -18,7 +18,7 @@ RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.n
 
 # Download libraries we need to run in lambda
 WORKDIR /tmp
-RUN yumdownloader -x \*i686 --archlist=x86_64, clamav clamav-lib clamav-update json-c pcre2 pcre libprelude gnutls libtasn1 nettle
+RUN yumdownloader -x \*i686 --archlist=x86_64 clamav clamav-lib clamav-update json-c pcre2 pcre libprelude gnutls libtasn1 nettle
 RUN rpm2cpio clamav-0*.rpm | cpio -idmv
 RUN rpm2cpio clamav-lib*.rpm | cpio -idmv
 RUN rpm2cpio clamav-update*.rpm | cpio -idmv
@@ -37,7 +37,7 @@ RUN cp /tmp/usr/bin/clamscan /tmp/usr/bin/freshclam /tmp/usr/lib64/* /clamav
 RUN echo "DatabaseMirror database.clamav.net" > /clamav/freshclam.conf && \
     echo "CompressLocalDatabase yes" >> /clamav/freshclam.conf
 
-FROM public.ecr.aws/lambda/python:3.10
+FROM public.ecr.aws/lambda/python:3.8
 
 RUN yum install -y libtool-ltdl binutils
 
