@@ -26,12 +26,12 @@ class TestCommon(unittest.TestCase):
         )
 
     def test_init_MIME_VALIDATION(self):
-        self.assertEquals(
+        self.assertEqual(
             MIME_VALIDATION, MIME_VALIDATION_STATIC, "Failed to get environment value MIME_VALIDATION."
         )
 
     def test_init_MIME_VALIDATION_STATIC_VALID_LIST(self):
-        self.assertEquals(
+        self.assertEqual(
             MIME_VALIDATION_STATIC_VALID_LIST, "image/gif,image/png,image/jpeg,image/jpg,application/pdf",
             "Failed to get environment value VALID_MIMES."
         )

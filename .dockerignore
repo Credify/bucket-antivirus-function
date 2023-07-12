@@ -1,0 +1,11 @@
+.circleci/
+.coveragerc
+.editorconfig
+.github/
+.gitignore
+.markdownlintrc
+.pre-commit-config.yaml
+.upgrade.yaml
+Dockerfile
+Jenkinsfile
+README.md

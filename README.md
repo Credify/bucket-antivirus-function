@@ -391,6 +391,10 @@ sh ./scripts/run-update-lambda
 
 Both commands rebuild the docker image ready to be deployed in AWS and execute the appropriate handler.
 
+### Lambda PR Deployment
+Be careful, at the moment of writing these line, once a PR is build and sync to ECR it won't get refreshed by a new build. I endup creating a new PR to update ECR.
+
+
 ### Sample files
 If you want a file that will be recognized as a virus you can download a test file from the [EICAR](https://www.eicar.org/?page_id=3950)
 website and uploaded to your bucket.

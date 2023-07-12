@@ -17,6 +17,7 @@ BUCKET=$1
 KEY=$2
 
 # Verify that the file exists first
+#aws  --profile upg-poc_admin-157798590283 s3 ls "s3://${BUCKET}/${KEY}"
 aws s3 ls "s3://${BUCKET}/${KEY}"
 
 NAME="antivirus-scan"
