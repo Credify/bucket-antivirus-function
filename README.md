@@ -16,8 +16,7 @@ open source antivirus engine [ClamAV](http://www.clamav.net/)
 
 ![architecture-diagram](../master/images/bucket-antivirus-function.png)
 
-- Each time a new object is added to a bucket, S3 invokes the Lambda
-function to scan the object
+- Each time a new object is added to a bucket, S3 invokes the Lambda function to scan the object
 - The function package will download (if needed) current antivirus
 definitions from a S3 bucket. Transfer speeds between a S3 bucket and
 Lambda are typically faster and more reliable than another source
