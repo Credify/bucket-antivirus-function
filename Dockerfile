@@ -8,7 +8,7 @@ RUN pip3 install --no-cache-dir -r requirements-dev.txt
 # hadolint ignore=DL3059
 RUN python3 -m unittest
 
-FROM docker-release.artifactory.build.upgrade.com/container-base:2.0.20230808.0-53 as clamav-image
+FROM docker-release.artifactory.build.upgrade.com/container-base:2.0.20230822.0-54 as clamav-image
 
 USER root
 
