@@ -144,7 +144,7 @@ def set_av_metadata(s3_object, scan_result, scan_signature, timestamp):
         },
     )
 
-def update_s3_object(s3_object):
+def remove_javascript_from_pdf(s3_object):
     file_path = get_local_path(s3_object, "/tmp")
     create_dir(os.path.dirname(file_path))
     s3_object.download_file(file_path)
@@ -296,6 +296,7 @@ def lambda_handler(event, context):
         % (os.path.join(s3_object.bucket_name, s3_object.key), scan_result)
     )
 
+    remove_javascript_from_pdf(s3_object)
     result_time = get_timestamp()
     # Set the properties on the object with the scan results
     if "AV_UPDATE_METADATA" in os.environ:
