@@ -20,6 +20,7 @@ from urllib.parse import unquote_plus
 from distutils.util import strtobool
 
 import boto3
+import fitz
 
 import clamav
 import metrics
@@ -143,6 +144,38 @@ def set_av_metadata(s3_object, scan_result, scan_signature, timestamp):
         },
     )
 
+def update_s3_object(s3_object):
+    file_path = get_local_path(s3_object, "/tmp")
+    create_dir(os.path.dirname(file_path))
+    s3_object.download_file(file_path)
+
+    pdf_doc = fitz.open(filename=file_path, filetype="application/pdf")
+    contains_js = False
+
+    for xref in range(1, pdf_doc.xref_length()):
+        js = pdf_doc.xref_get_key(xref, "JS")  # either a JS action or null
+        if js != ("null", "null"):
+            contains_js = True
+            break
+
+    if contains_js:
+        print("file contains javascript, removing and updating on S3")
+        pdf_doc.scrub(attached_files=False,
+                  clean_pages=False,
+                  embedded_files=False,
+                  hidden_text=False,
+                  javascript=True,
+                  metadata=False,
+                  redactions=False,
+                  redact_images=0,
+                  remove_links=False,
+                  reset_fields=False,
+                  reset_responses=False,
+                  thumbnails=False,
+                  xml_metadata=False)
+        s3_object.upload_file(file_path)
+
+    pdf_doc.close()
 
 def set_av_tags(s3_client, s3_object, scan_result, scan_signature, timestamp):
     curr_tags = s3_client.get_object_tagging(

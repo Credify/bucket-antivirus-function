@@ -10,3 +10,4 @@ pytz==2023.3
 python-magic
 boto3==1.15.18
 botocore==1.18.18
+pymupdf==1.23.4
