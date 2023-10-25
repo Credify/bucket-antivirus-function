@@ -146,7 +146,9 @@ def set_av_metadata(s3_object, scan_result, scan_signature, timestamp):
 
 def remove_javascript_from_pdf(s3_object):
     file_path = get_local_path(s3_object, "/tmp")
+    file_path_modified = get_local_path(s3_object, "/tmp/modified")
     create_dir(os.path.dirname(file_path))
+    create_dir(os.path.dirname(file_path_modified))
     s3_object.download_file(file_path)
 
     pdf_doc = fitz.open(filename=file_path, filetype="application/pdf")
@@ -154,7 +156,9 @@ def remove_javascript_from_pdf(s3_object):
 
     for xref in range(1, pdf_doc.xref_length()):
         js = pdf_doc.xref_get_key(xref, "JS")  # either a JS action or null
-        if js != ("null", "null"):
+        if js != ("null", "null")  and js != ("string", ""):
+            print("content of js[0] " + js[0])
+            print("content of js[1] " + js[1])
             contains_js = True
             break
 
@@ -173,7 +177,10 @@ def remove_javascript_from_pdf(s3_object):
                   reset_responses=False,
                   thumbnails=False,
                   xml_metadata=False)
-        s3_object.upload_file(file_path)
+        os.remove(file_path)
+        pdf_doc.save(file_path_modified)
+        s3_object.upload_file(file_path_modified)
+        os.remove(file_path_modified)
 
     pdf_doc.close()
 
