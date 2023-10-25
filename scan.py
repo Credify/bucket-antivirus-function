@@ -21,6 +21,7 @@ from distutils.util import strtobool
 
 import boto3
 import fitz
+import magic
 
 import clamav
 import metrics
@@ -303,7 +304,10 @@ def lambda_handler(event, context):
         % (os.path.join(s3_object.bucket_name, s3_object.key), scan_result)
     )
 
-    remove_javascript_from_pdf(s3_object)
+    if magic.from_file(file_path, mime=True) == "application/pdf": 
+        print("it is a pdf, it will try to remove javascript if present")
+        remove_javascript_from_pdf(s3_object)
+
     result_time = get_timestamp()
     # Set the properties on the object with the scan results
     if "AV_UPDATE_METADATA" in os.environ:
