@@ -157,7 +157,7 @@ def remove_javascript_from_pdf(s3_object):
 
     for xref in range(1, pdf_doc.xref_length()):
         js = pdf_doc.xref_get_key(xref, "JS")  # either a JS action or null
-        if js != ("null", "null")  and js != ("string", ""):
+        if js != ("null", "null")  or js != ("string", ""):
             print("content of js[0] " + js[0])
             print("content of js[1] " + js[1])
             contains_js = True
