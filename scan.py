@@ -153,18 +153,10 @@ def remove_javascript_from_pdf(s3_object):
     s3_object.download_file(file_path)
 
     pdf_doc = fitz.open(filename=file_path, filetype="application/pdf")
-    contains_js = False
+    should_run = AV_SIGNATURE_METADATA in s3_object.metadata
 
-    for xref in range(1, pdf_doc.xref_length()):
-        js = pdf_doc.xref_get_key(xref, "JS")  # either a JS action or null
-        if js != ("null", "null")  or js != ("string", ""):
-            print("content of js[0] " + js[0])
-            print("content of js[1] " + js[1])
-            contains_js = True
-            break
-
-    if contains_js:
-        print("file contains javascript, removing and updating on S3")
+    if should_run:
+        print("running scrub method to remove javascript")
         pdf_doc.scrub(attached_files=False,
                   clean_pages=False,
                   embedded_files=False,
