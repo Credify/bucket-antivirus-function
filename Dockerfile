@@ -14,7 +14,6 @@ USER root
 
 # Install packages
 RUN dnf install -y cpio less
-#RUN dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
 # Download libraries we need to run in lambda
 WORKDIR /var/cache/dnf
