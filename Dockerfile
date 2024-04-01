@@ -62,4 +62,4 @@ ENV LD_LIBRARY_PATH=/var/task/lib
 RUN ldconfig
 #RUN cp /var/task/bin/clamav /var/task/lib -r
 
-RUN pip3 install --no-cache-dir -r requirements.txt --target /var/task
+RUN pip3 install --no-cache-dir -r requirements.txt --target /var/task awslambdaric
