@@ -63,3 +63,7 @@ RUN ldconfig
 #RUN cp /var/task/bin/clamav /var/task/lib -r
 
 RUN pip3 install --no-cache-dir -r requirements.txt --target /var/task awslambdaric
+
+ENTRYPOINT [ "python", "-m", "awslambdaric" ]
+
+#CMD ["scan.lambda_handler"]
