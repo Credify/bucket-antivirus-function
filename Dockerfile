@@ -56,14 +56,12 @@ COPY --chown=upgrade:upgrade --from=build-image /app/requirements.txt /var/task/
 COPY --chown=upgrade:upgrade --from=build-image /app/custom_clamav_rules /var/task/bin/custom_clamav_rules
 COPY --chown=upgrade:upgrade --from=clamav-image /clamav /var/task/bin
 
+# Loading all shared libraries
 RUN mkdir /var/task/lib
 RUN cp /var/task/bin/* /var/task/lib -r
 ENV LD_LIBRARY_PATH=/var/task/lib
 RUN ldconfig
-#RUN cp /var/task/bin/clamav /var/task/lib -r
 
 RUN pip3 install --no-cache-dir -r requirements.txt --target /var/task awslambdaric
 
 ENTRYPOINT [ "python", "-m", "awslambdaric" ]
-
-#CMD ["scan.lambda_handler"]
