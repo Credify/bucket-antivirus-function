@@ -1,4 +1,4 @@
-FROM docker-release.artifactory.build.upgrade.com/python-base-2023:2.0.20240426.0-83.3.8-129 as build-image
+FROM docker-release.artifactory.build.upgrade.com/python311-base:2.0.20240412.0-81-2 as build-image
 
 USER root
 
@@ -6,11 +6,11 @@ USER root
 WORKDIR /app
 COPY . /app
 
-RUN pip3 install --no-cache-dir -r requirements-dev.txt
+RUN pip3.11 install --no-cache-dir -r requirements-dev.txt
 # hadolint ignore=DL3059
-RUN python3 -m unittest
+RUN python3.11 -m unittest
 
-FROM docker-release.artifactory.build.upgrade.com/container-base-2023:2.0.20240426.0-83 as clamav-image
+FROM docker-release.artifactory.build.upgrade.com/container-base-2023:2.0.20240503.0-84 as clamav-image
 
 USER root
 
@@ -41,6 +41,7 @@ RUN cp /var/cache/dnf/usr/bin/clamscan /var/cache/dnf/usr/bin/freshclam /var/cac
 # Fix the freshclam.conf settings
 RUN echo "DatabaseMirror database.clamav.net" > /clamav/freshclam.conf && \
     echo "CompressLocalDatabase yes" >> /clamav/freshclam.conf
+
 
 FROM docker-release.artifactory.build.upgrade.com/python311-base:2.0.20240412.0-81-2
 
