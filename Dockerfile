@@ -42,7 +42,7 @@ RUN cp /var/cache/dnf/usr/bin/clamscan /var/cache/dnf/usr/bin/freshclam /var/cac
 RUN echo "DatabaseMirror database.clamav.net" > /clamav/freshclam.conf && \
     echo "CompressLocalDatabase yes" >> /clamav/freshclam.conf
 
-FROM docker-release.artifactory.build.upgrade.com/python-base-2023:2.0.20240426.0-83.3.8-129
+FROM docker-release.artifactory.build.upgrade.com/python311-base:2.0.20240412.0-81-2
 
 USER root
 
@@ -62,6 +62,6 @@ RUN cp /var/task/bin/* /var/task/lib -r
 ENV LD_LIBRARY_PATH=/var/task/lib
 RUN ldconfig
 
-RUN pip3 install --no-cache-dir -r requirements.txt --target /var/task awslambdaric
+RUN pip3.11 install --no-cache-dir -r requirements.txt --target /var/task awslambdaric
 
-ENTRYPOINT [ "python", "-m", "awslambdaric" ]
+ENTRYPOINT [ "python3.11", "-m", "awslambdaric" ]
