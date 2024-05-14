@@ -1,4 +1,4 @@
-FROM docker-release.artifactory.build.upgrade.com/python311-base:2.0.20240412.0-81-2 as build-image
+FROM docker-release.artifactory.build.upgrade.com/python311-base:2.0.20240503.0-84-6 as build-image
 
 USER root
 
@@ -43,7 +43,7 @@ RUN echo "DatabaseMirror database.clamav.net" > /clamav/freshclam.conf && \
     echo "CompressLocalDatabase yes" >> /clamav/freshclam.conf
 
 
-FROM docker-release.artifactory.build.upgrade.com/python311-base:2.0.20240412.0-81-2
+FROM docker-release.artifactory.build.upgrade.com/python311-base:2.0.20240503.0-84-6
 
 USER root
 
