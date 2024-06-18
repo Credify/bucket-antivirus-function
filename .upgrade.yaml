@@ -2,8 +2,9 @@
 
 "checks": null
 "classification": null
-"deploymentNames": null
-"deploymentOwners": []
+"deploymentNames": []
+"deploymentOwners":
+- "team:platform"
 "leads":
   "teams": []
   "users":
@@ -11,8 +12,9 @@
   - "pgangodkerupgrade"
 "mergebot": null
 "owner": "platform"
-"platformOwners": null
-"primaryOwners": []
+"platformOwners": []
+"primaryOwners":
+- "team:platform"
 "qaOwners": null
 "service": null
 "upgradeableBranches": null
