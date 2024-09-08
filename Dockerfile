@@ -1,4 +1,4 @@
-FROM 118455887602.dkr.ecr.us-west-2.amazonaws.com/releases/images/python311-base-legacy:20240906101359-34e324c6 as build-image
+FROM 118455887602.dkr.ecr.us-west-2.amazonaws.com/releases/images/python311-base-legacy:20240907101714-89c59870 as build-image
 
 USER root
 
@@ -10,7 +10,7 @@ RUN pip3.11 install --no-cache-dir -r requirements-dev.txt
 # hadolint ignore=DL3059
 RUN python3.11 -m unittest
 
-FROM docker-release.artifactory.build.upgrade.com/container-base-2023:2.0.20240816.0-105 as clamav-image
+FROM docker-release.artifactory.build.upgrade.com/container-base-2023:2.0.20240903.0-106 as clamav-image
 
 USER root
 
@@ -43,7 +43,7 @@ RUN echo "DatabaseMirror database.clamav.net" > /clamav/freshclam.conf && \
     echo "CompressLocalDatabase yes" >> /clamav/freshclam.conf
 
 
-FROM 118455887602.dkr.ecr.us-west-2.amazonaws.com/releases/images/python311-base-legacy:20240906101359-34e324c6
+FROM 118455887602.dkr.ecr.us-west-2.amazonaws.com/releases/images/python311-base-legacy:20240907101714-89c59870
 
 USER root
 
