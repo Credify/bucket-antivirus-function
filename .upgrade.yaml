@@ -2,7 +2,9 @@
 
 "checks": null
 "classification": null
-"deploymentNames": []
+"deploymentNames":
+- "up-por-forms-edge-av-update"
+- "up-por-forms-edge-av-scan"
 "deploymentOwners":
 - "team:platform"
 "leads":
