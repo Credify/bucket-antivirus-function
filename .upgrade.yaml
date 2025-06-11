@@ -20,6 +20,7 @@
 "platformOwners": []
 "primaryOwners":
 - "team:platform"
+"pullRequestReviewSlackChannel": null
 "qaOwners": null
 "service": null
 "upgradeableBranches": null
