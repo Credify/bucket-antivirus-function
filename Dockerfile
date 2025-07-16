@@ -19,7 +19,7 @@ RUN dnf install -y cpio less
 
 # Download libraries we need to run in lambda
 WORKDIR /var/cache/dnf
-RUN dnf download --archlist=x86_64 clamav clamav-lib clamav-update json-c pcre2 pcre libprelude gnutls libtasn1 nettle openssl-libs
+RUN dnf download clamav clamav-lib clamav-update json-c pcre2 pcre libprelude gnutls libtasn1 nettle openssl-libs
 
 RUN rpm2cpio clamav*.rpm | cpio -idmv
 RUN rpm2cpio clamav-lib*.rpm | cpio -idmv
