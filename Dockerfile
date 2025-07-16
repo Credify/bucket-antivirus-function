@@ -10,7 +10,7 @@ RUN pip3.11 install --no-cache-dir -r requirements-dev.txt
 # hadolint ignore=DL3059
 RUN python3.11 -m unittest
 
-FROM docker-release.artifactory.build.upgrade.com/container-base-2023:2.0.20250623.0-38 as clamav-image
+FROM 118455887602.dkr.ecr.us-west-2.amazonaws.com/releases/images/container-base-2023:20250716143201-c933eded as clamav-image
 
 USER root
 
@@ -19,7 +19,7 @@ RUN dnf install -y cpio less
 
 # Download libraries we need to run in lambda
 WORKDIR /var/cache/dnf
-RUN dnf download --archlist=x86_64 clamav clamav-lib clamav-update json-c pcre2 pcre libprelude gnutls libtasn1 nettle openssl-libs
+RUN dnf download clamav clamav-lib clamav-update json-c pcre2 pcre libprelude gnutls libtasn1 nettle openssl-libs
 
 RUN rpm2cpio clamav*.rpm | cpio -idmv
 RUN rpm2cpio clamav-lib*.rpm | cpio -idmv
