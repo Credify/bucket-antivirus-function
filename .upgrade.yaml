@@ -20,7 +20,7 @@
 "platformOwners": []
 "primaryOwners":
 - "team:platform"
-"pullRequestReviewSlackChannel": null
+"pullRequestReviewSlackChannel": "shared-libraries-support"
 "qaOwners": null
 "service": null
 "upgradeableBranches": null
