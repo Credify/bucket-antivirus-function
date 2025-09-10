@@ -10,7 +10,7 @@ RUN pip3.11 install --no-cache-dir -r requirements-dev.txt
 # hadolint ignore=DL3059
 RUN python3.11 -m unittest
 
-FROM 118455887602.dkr.ecr.us-west-2.amazonaws.com/releases/images/container-base-2023:20250821101230-053bd0d0 as clamav-image
+FROM 118455887602.dkr.ecr.us-west-2.amazonaws.com/releases/images/container-base-2023:20250909100627-14c2fd12 as clamav-image
 
 USER root
 
