@@ -92,21 +92,26 @@ RUN mkdir -p /var/task/lib && \
     ldconfig
 
 # Set the library path to include both /var/task/lib and standard library paths
-ENV LD_LIBRARY_PATH=/var/task/lib:/usr/lib64:/usr/local/lib64:./bin
+ENV LD_LIBRARY_PATH=/var/task/lib:/usr/lib64:/usr/local/lib64:./bin:/var/task/bin/lib
 # Create necessary symlinks and verify ClamAV functionality
 RUN ln -sf /var/task/lib/libfreshclam.so.3.0.2 /var/task/lib/libfreshclam.so.3 && \
     ln -sf /var/task/lib/libclamav.so.12.0.3 /var/task/lib/libclamav.so.9 && \
     ln -sf /var/task/lib/libclammspack.so.0.8.0 /var/task/lib/libclammspack.so.0 && \
+    # Also put libraries directly in bin directory for direct access
+    cp /var/task/lib/libfreshclam.so.3.0.2 /var/task/bin/ && \
+    ln -sf /var/task/bin/libfreshclam.so.3.0.2 /var/task/bin/libfreshclam.so.3 && \
     # Also create symlinks in bin directory for compatibility
     mkdir -p /var/task/bin/lib && \
     cp /var/task/lib/*.so* /var/task/bin/lib/ && \
+    # Create symlink for freshclam.conf in the expected location
+    ln -sf /var/task/freshclam.conf /var/task/bin/freshclam.conf && \
     # Verify ClamAV binary compatibility
     /var/task/bin/clamscan --version && \
     # Verify freshclam functionality
     mkdir -p /tmp/clamav && \
     chmod +x /var/task/bin/freshclam && \
     LD_LIBRARY_PATH=/var/task/lib:/usr/lib64:/usr/local/lib64:/var/task/bin/lib \
-    /var/task/bin/freshclam --config-file=/var/task/freshclam.conf --version
+    /var/task/bin/freshclam --config-file=./bin/freshclam.conf --version
 
 # Install dependencies and prepare runtime directories
 RUN pip3.11 install --no-cache-dir -r requirements.txt --target /var/task awslambdaric && \
