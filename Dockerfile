@@ -80,28 +80,32 @@ COPY --from=clamav-image /clamav /var/task
 
 # Set up permissions and libraries
 RUN mkdir -p /var/task/lib && \
+    # Copy all libraries to the lib directory
+    cp /var/task/bin/freshclam /var/task/bin/clamscan /var/task/lib/ 2>/dev/null || true && \
+    find /var/task -type f -name "*.so*" -exec cp {} /var/task/lib/ \; 2>/dev/null || true && \
     # Fix permissions for Lambda execution
-    chown -R upgrade:upgrade /var/task && \
     chmod -R 755 /var/task/bin && \
     chmod 644 /var/task/*.py && \
-    chmod 755 /var/task/bin/freshclam /var/task/bin/clamscan && \
-    # Copy libraries to the lib directory
-    cp /var/task/bin/* /var/task/lib/ 2>/dev/null || true && \
-    find /var/task/lib -type f -name "*.so*" -exec cp {} /var/task/lib/ \; 2>/dev/null || true && \
+    chmod 755 /var/task/bin/freshclam /var/task/bin/clamscan /var/task/lib/freshclam /var/task/lib/clamscan && \
+    chown -R upgrade:upgrade /var/task && \
     # Update the dynamic linker run-time bindings
     ldconfig
 
 # Set the library path to include both /var/task/lib and standard library paths
-ENV LD_LIBRARY_PATH=/var/task/lib:/usr/lib64:/usr/local/lib64
+ENV LD_LIBRARY_PATH=/var/task/lib:/usr/lib64:/usr/local/lib64:./bin
 # Create necessary symlinks and verify ClamAV functionality
 RUN ln -sf /var/task/lib/libfreshclam.so.3.0.2 /var/task/lib/libfreshclam.so.3 && \
     ln -sf /var/task/lib/libclamav.so.12.0.3 /var/task/lib/libclamav.so.9 && \
     ln -sf /var/task/lib/libclammspack.so.0.8.0 /var/task/lib/libclammspack.so.0 && \
+    # Also create symlinks in bin directory for compatibility
+    mkdir -p /var/task/bin/lib && \
+    cp /var/task/lib/*.so* /var/task/bin/lib/ && \
     # Verify ClamAV binary compatibility
     /var/task/bin/clamscan --version && \
     # Verify freshclam functionality
     mkdir -p /tmp/clamav && \
     chmod +x /var/task/bin/freshclam && \
+    LD_LIBRARY_PATH=/var/task/lib:/usr/lib64:/usr/local/lib64:/var/task/bin/lib \
     /var/task/bin/freshclam --config-file=/var/task/freshclam.conf --version
 
 # Install dependencies and prepare runtime directories
