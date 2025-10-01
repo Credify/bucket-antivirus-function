@@ -21,8 +21,15 @@ RUN dnf install -y cpio less wget gcc make pkgconfig zlib-devel bzip2-devel chec
 WORKDIR /tmp
 RUN mkdir -p /clamav/bin /clamav/lib
 
-# Download ClamAV RPM directly - version 1.4.3
-RUN wget -O /tmp/clamav.rpm https://www.clamav.net/downloads/production/clamav-1.4.3.linux.aarch64.rpm && \
+# Get architecture and download appropriate ClamAV RPM - version 1.4.3
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
+        echo "Detected ARM64 architecture, using aarch64 package" && \
+        wget -O /tmp/clamav.rpm https://www.clamav.net/downloads/production/clamav-1.4.3.linux.aarch64.rpm; \
+    else \
+        echo "Detected x86_64 architecture, using x86_64 package" && \
+        wget -O /tmp/clamav.rpm https://www.clamav.net/downloads/production/clamav-1.4.3.linux.x86_64.rpm; \
+    fi && \
     mkdir -p /tmp/clamav_extract && \
     cd /tmp/clamav_extract && \
     rpm2cpio /tmp/clamav.rpm | cpio -idmv && \
@@ -79,6 +86,11 @@ RUN mkdir -p /var/task/lib
 RUN cp /var/task/bin/* /var/task/lib/ && cp /var/task/lib/* /var/task/lib/ || true
 ENV LD_LIBRARY_PATH=/var/task/lib
 RUN ldconfig
+
+# Check if ClamAV binaries can be executed on the current architecture
+RUN echo "Verifying ClamAV binary compatibility" && \
+    /var/task/bin/clamscan --version || \
+    echo "Warning: ClamAV binaries may not be compatible with this architecture"
 
 RUN pip3.11 install --no-cache-dir -r requirements.txt --target /var/task awslambdaric
 
