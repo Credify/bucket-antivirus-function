@@ -33,27 +33,26 @@ RUN ARCH=$(uname -m) && \
     mkdir -p /tmp/clamav_extract && \
     cd /tmp/clamav_extract && \
     rpm2cpio /tmp/clamav.rpm | cpio -idmv && \
+    # Copy binaries
     cp usr/local/bin/clamscan /clamav/bin/ && \
     cp usr/local/bin/freshclam /clamav/bin/ && \
+    # Copy all library files
     cp -r usr/local/lib64/* /clamav/lib/ && \
+    # Make binaries executable
     chmod +x /clamav/bin/clamscan /clamav/bin/freshclam && \
-    rm -rf /tmp/clamav.rpm /tmp/clamav_extract
+    # Clean up
+    rm -rf /tmp/clamav.rpm
 
-# Download system dependencies
+# Download and extract system dependencies in a single layer
 WORKDIR /var/cache/dnf
-RUN dnf download json-c pcre2 pcre libprelude gnutls libtasn1 nettle openssl-libs
-
-# Extract system packages
-RUN rpm2cpio json-c*.rpm | cpio -idmv || true
-RUN rpm2cpio pcre-*.rpm | cpio -idmv || true
-RUN rpm2cpio pcre2-*.rpm | cpio -idmv || true
-RUN rpm2cpio gnutls*.rpm | cpio -idmv || true
-RUN rpm2cpio libtasn1*.rpm | cpio -idmv || true
-RUN rpm2cpio nettle*.rpm | cpio -idmv || true
-RUN rpm2cpio openssl*.rpm | cpio -idmv || true
-
-# Copy needed libraries
-RUN cp -r /var/cache/dnf/usr/lib64/* /clamav/lib/ || true
+RUN dnf download json-c pcre2 pcre libprelude gnutls libtasn1 nettle openssl-libs && \
+    # Extract all RPMs
+    for rpm in *.rpm; do \
+        echo "Extracting $rpm"; \
+        rpm2cpio $rpm | cpio -idmv || true; \
+    done && \
+    # Copy needed libraries
+    cp -r /var/cache/dnf/usr/lib64/* /clamav/lib/ || true
 
 # Fix the freshclam.conf settings for ClamAV 1.4.3
 RUN echo "DatabaseMirror database.clamav.net" > /clamav/freshclam.conf && \
@@ -79,19 +78,51 @@ WORKDIR /var/task
 COPY --chown=upgrade:upgrade --from=build-image /app/*.py /var/task
 COPY --chown=upgrade:upgrade --from=build-image /app/requirements.txt /var/task/requirements.txt
 COPY --chown=upgrade:upgrade --from=build-image /app/custom_clamav_rules /var/task/bin/custom_clamav_rules
-COPY --chown=upgrade:upgrade --from=clamav-image /clamav /var/task
+COPY --from=clamav-image /clamav /var/task
 
-# Loading all shared libraries
-RUN mkdir -p /var/task/lib
-RUN cp /var/task/bin/* /var/task/lib/ && cp /var/task/lib/* /var/task/lib/ || true
-ENV LD_LIBRARY_PATH=/var/task/lib
-RUN ldconfig
+# Set up library environment for ClamAV
+RUN mkdir -p /var/task/lib && \
+    # Fix permissions for Lambda execution
+    chown -R upgrade:upgrade /var/task && \
+    chmod -R 755 /var/task/bin && \
+    chmod 644 /var/task/*.py && \
+    chmod 755 /var/task/bin/freshclam /var/task/bin/clamscan && \
+    # Copy freshclam.conf to bin directory where it's expected
+    cp /var/task/freshclam.conf /var/task/bin/
 
-# Check if ClamAV binaries can be executed on the current architecture
-RUN echo "Verifying ClamAV binary compatibility" && \
-    /var/task/bin/clamscan --version || \
-    echo "Warning: ClamAV binaries may not be compatible with this architecture"
+# Set up the proper library environment for ClamAV
+ENV LD_LIBRARY_PATH=/var/task/lib:/var/task/bin:/usr/lib64:/usr/local/lib64
+# Create a clean library setup with minimal required libraries and symlinks
+RUN echo "Setting up ClamAV libraries" && \
+    # Copy required libraries to bin directory where freshclam will find them
+    cp /var/task/lib/libfreshclam.so.3.0.2 /var/task/bin/ && \
+    cp /var/task/lib/libclamav.so.12.0.3 /var/task/bin/ && \
+    cp /var/task/lib/libclammspack.so.0.8.0 /var/task/bin/ && \
+    # Create necessary symlinks
+    ln -sf /var/task/lib/libfreshclam.so.3.0.2 /var/task/lib/libfreshclam.so.3 && \
+    ln -sf /var/task/bin/libfreshclam.so.3.0.2 /var/task/bin/libfreshclam.so.3 && \
+    ln -sf /var/task/lib/libclamav.so.12.0.3 /var/task/lib/libclamav.so.12 && \
+    ln -sf /var/task/bin/libclamav.so.12.0.3 /var/task/bin/libclamav.so.12 && \
+    ln -sf /var/task/lib/libclammspack.so.0.8.0 /var/task/lib/libclammspack.so.0 && \
+    ln -sf /var/task/bin/libclammspack.so.0.8.0 /var/task/bin/libclammspack.so.0 && \
+    # Verify ClamAV is working
+    echo "Verifying ClamAV binary compatibility" && \
+    /var/task/bin/clamscan --version
 
+# Test freshclam version
+RUN echo "Testing freshclam execution with correct library path" && \
+    mkdir -p /tmp/clamav && \
+    echo "Verifying freshclam version" && \
+    /var/task/bin/freshclam --config-file=/var/task/bin/freshclam.conf --version
+
+# Install Python dependencies
 RUN pip3.11 install --no-cache-dir -r requirements.txt --target /var/task awslambdaric
+
+# Set up runtime directories
+RUN mkdir -p /tmp/clamav && chown -R upgrade:upgrade /tmp/clamav && \
+    mkdir -p /tmp/clamav_defs && chown -R upgrade:upgrade /tmp/clamav_defs
+
+# Switch to the upgrade user for better security
+USER upgrade
 
 ENTRYPOINT [ "python3.11", "-m", "awslambdaric" ]
