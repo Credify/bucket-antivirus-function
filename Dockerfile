@@ -1,4 +1,4 @@
-FROM 118455887602.dkr.ecr.us-west-2.amazonaws.com/releases/images/python311-base-legacy:20260124101726-a2f9569b as build-image
+FROM 118455887602.dkr.ecr.us-west-2.amazonaws.com/releases/images/python311-base-legacy:20260125101707-7c8d57c1 as build-image
 
 USER root
 
@@ -66,7 +66,7 @@ RUN echo "DatabaseMirror database.clamav.net" > /clamav/freshclam.conf && \
     echo "DatabaseDirectory /tmp/clamav" >> /clamav/freshclam.conf
 
 
-FROM 118455887602.dkr.ecr.us-west-2.amazonaws.com/releases/images/python311-base-legacy:20260124101726-a2f9569b
+FROM 118455887602.dkr.ecr.us-west-2.amazonaws.com/releases/images/python311-base-legacy:20260125101707-7c8d57c1
 
 USER root
 
